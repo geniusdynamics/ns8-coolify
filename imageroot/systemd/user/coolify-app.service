@@ -1,0 +1,30 @@
+#
+# Copyright (C) 2022 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+[Unit]
+Description=Podman  coolify-app.service
+BindsTo=coolify.service
+After=coolify.service postgres-app.service redis-app.service soketi-app.service
+
+[Service]
+Environment=PODMAN_SYSTEMD_UNIT=%n
+EnvironmentFile=%S/state/environment
+EnvironmentFile=-%S/state/smarthost.env
+WorkingDirectory=%S/state
+Restart=always
+TimeoutStopSec=70
+ExecStartPre=/bin/mkdir -p tmp
+ExecStartPre=/bin/rm -f %t/coolify-app.pid %t/coolify-app.ctr-id
+ExecStartPre=-runagent discover-smarthost
+ExecStart=/usr/bin/podman run --conmon-pidfile %t/coolify-app.pid  --cidfile %t/coolify-app.ctr-id --cgroups=no-conmon  --pod-id-file %t/coolify.pod-id --replace -d --name  coolify-app     --env coolify.env  ${_IMAGE}  
+ExecStop=/usr/bin/podman stop --ignore --cidfile %t/coolify-app.ctr-id -t 10
+ExecReload=/usr/bin/podman kill -s HUP coolify-app
+SyslogIdentifier=%u
+ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/coolify-app.ctr-id
+PIDFile=%t/coolify-app.pid
+Type=forking
+
+[Install]
+WantedBy=default.target
