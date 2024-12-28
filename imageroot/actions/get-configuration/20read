@@ -22,18 +22,18 @@ config["host"] = os.getenv("TRAEFIK_HOST","")
 config["http2https"] = os.getenv("TRAEFIK_HTTP2HTTPS") == "True"
 config["lets_encrypt"] = os.getenv("TRAEFIK_LETS_ENCRYPT") == "True"
 
-# Dump the configuration to stdout
-# json.dump(config, fp=sys.stdout)
-if os.path.exists("coolify.env"): 
-	data = agent.read_envfile("coolify.env") 
- 
-if os.path.exists("postgres.env"): 
-	data = agent.read_envfile("postgres.env") 
- 
-if os.path.exists("redis.env"): 
-	data = agent.read_envfile("redis.env") 
- 
-if os.path.exists("soketi.env"): 
-	data = agent.read_envfile("soketi.env") 
+# # Dump the configuration to stdout
+# # json.dump(config, fp=sys.stdout)
+# if os.path.exists("coolify.env"): 
+# 	data = agent.read_envfile("coolify.env") 
+#  
+# if os.path.exists("postgres.env"): 
+# 	data = agent.read_envfile("postgres.env") 
+#  
+# if os.path.exists("redis.env"): 
+# 	data = agent.read_envfile("redis.env") 
+#  
+# if os.path.exists("soketi.env"): 
+# 	data = agent.read_envfile("soketi.env") 
  
 json.dump(config, fp=sys.stdout)
