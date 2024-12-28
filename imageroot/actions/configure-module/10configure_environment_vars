@@ -23,3 +23,7 @@ agent.write_envfile("coolify.env", coolify)
 postgres = { 
 } 
 agent.write_envfile("postgres.env", postgres) 
+ 
+redis = { 
+} 
+agent.write_envfile("redis.env", redis) 
