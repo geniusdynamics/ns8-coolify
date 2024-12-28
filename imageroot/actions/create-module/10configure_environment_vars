@@ -5,16 +5,19 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
+import base64
 import json
-import sys
-import agent
 import os
+import sys
+
+import agent
 
 # Try to parse the stdin as JSON.
 # If parsing fails, output everything to stderr
 data = json.load(sys.stdin)
 
-#This is specific to you module, so you need to change it accordingly.
+# This is specific to you module, so you need to change it accordingly.
+
 
 def generate_random_password(length):
     # Generate random bytes and convert them to a hexadecimal string
@@ -22,20 +25,51 @@ def generate_random_password(length):
     password = random_bytes.hex()
     return password[:length]
 
-MARIADB_ROOT_PASSWORD= generate_random_password(16)
-MARIADB_DATABASE="coolify"
-MARIADB_USER="coolify"
-MARIADB_PASSWORD=generate_random_password(16)
-    # mariadb env
-mariadb_config = {
-    "MARIADB_ROOT_PASSWORD": MARIADB_ROOT_PASSWORD,
-    "MARIADB_DATABASE": MARIADB_DATABASE,
-    "MARIADB_USER": MARIADB_USER,
-    "MARIADB_PASSWORD": MARIADB_PASSWORD
+
+POSTGRES_PASSWORD = generate_random_password(16)
+POSTGRES_DB = "coolify"
+POSTGRES_USER = "coolify"
+db_config = {
+    "POSTGRES_PASSWORD": POSTGRES_PASSWORD,
+    "POSTGRES_DB": POSTGRES_DB,
+    "POSTGRES_USER": POSTGRES_USER,
 }
 
-agent.write_envfile("database.env", mariadb_config)
+agent.write_envfile("database.env", db_config)
+
+random_bytes = os.urandom(32)
+
+APP_KEY = "base64:" + base64.b64encode(random_bytes).decode("utf-8")
+APP_ENV = data.get("APP_ENV", "local")
+APP_NAME = data.get("APP_NAME", "Coolify")
+APP_ID = data.get("APP_ID", "1")
+APP_DEBUG = data.get("APP_DEBUG", "true")
+DB_DATABASE = POSTGRES_DB
+DB_USERNAME = POSTGRES_USER
+DB_PASSWORD = POSTGRES_PASSWORD
+DB_HOST = "postgres-app"
+DB_PORT = "5432"
+DB_CONNECTION = "pgsql"
+REDIS_HOST = "redis-app"
+REDIS_PASSWORD = ""
+
+app_config = {
+    "APP_KEY": APP_KEY,
+    "APP_ENV": APP_ENV,
+    "APP_NAME": APP_NAME,
+    "APP_ID": APP_ID,
+    "APP_DEBUG": APP_DEBUG,
+    "DB_DATABASE": DB_DATABASE,
+    "DB_USERNAME": DB_USERNAME,
+    "DB_PASSWORD": DB_PASSWORD,
+    "DB_HOST": DB_HOST,
+    "DB_PORT": DB_PORT,
+    "DB_CONNECTION": DB_CONNECTION,
+    "REDIS_HOST": REDIS_HOST,
+    "REDIS_PASSWORD": REDIS_PASSWORD,
+}
+agent.write_envfile("coolify-db.env", app_config)
 
 
 # just before starting systemd unit
-#agent.dump_env()
+# agent.dump_env()

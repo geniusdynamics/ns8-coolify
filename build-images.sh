@@ -13,8 +13,9 @@ images=()
 # The image will be pushed to GitHub container registry
 repobase="${REPOBASE:-ghcr.io/geniusdynamics}"
 # Configure the image name
-reponame="nginx"
-
+reponame="coolify"
+coolify_version="v4.0.0-beta.380"
+coolify_socketi="1.0.5"
 # Create a new empty container image
 container=$(buildah from scratch)
 
@@ -45,7 +46,7 @@ buildah config --entrypoint=/ \
     --label="org.nethserver.authorizations=traefik@node:routeadm" \
     --label="org.nethserver.tcp-ports-demand=1" \
     --label="org.nethserver.rootfull=0" \
-    --label="org.nethserver.images=docker.io/ docker.io/postgres:15-alpine docker.io/redis:7-alpine docker.io/" \
+    --label="org.nethserver.images=ghcr.io/coollabsio/coolify:${coolify_version} docker.io/postgres:15-alpine docker.io/redis:7-alpine ghcr.io/coollabsio/coolify-realtime:${coolify_socketi}" \
     "${container}"
 # Commit the image
 buildah commit "${container}" "${repobase}/${reponame}"

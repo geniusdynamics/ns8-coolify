@@ -18,7 +18,14 @@ TimeoutStopSec=70
 ExecStartPre=/bin/mkdir -p tmp
 ExecStartPre=/bin/rm -f %t/coolify-app.pid %t/coolify-app.ctr-id
 ExecStartPre=-runagent discover-smarthost
-ExecStart=/usr/bin/podman run --conmon-pidfile %t/coolify-app.pid  --cidfile %t/coolify-app.ctr-id --cgroups=no-conmon  --pod-id-file %t/coolify.pod-id --replace -d --name  coolify-app     --env coolify.env  ${_IMAGE}  
+ExecStart=/usr/bin/podman run --conmon-pidfile %t/coolify-app.pid  --cidfile %t/coolify-app.ctr-id --cgroups=no-conmon  --pod-id-file %t/coolify.pod-id --replace -d --name  coolify-app     --env coolify.env --env coolify-db.env \
+    --volume coolify-ssh:/var/www/html/storage/app/ssh \
+    --volume coolify-applications:/var/www/html/storage/app/applications \
+    --volume coolify-databases:/var/www/html/storage/app/databases \
+    --volume coolify-services:/var/www/html/storage/app/services \
+    --volume coolify-backups:/var/www/html/storage/app/backups \
+    --volume coolify-webhooks:/var/www/html/storage/app/webhooks-during-maintenance \
+    ${COOLIFY_IMAGE}  
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/coolify-app.ctr-id -t 10
 ExecReload=/usr/bin/podman kill -s HUP coolify-app
 SyslogIdentifier=%u
