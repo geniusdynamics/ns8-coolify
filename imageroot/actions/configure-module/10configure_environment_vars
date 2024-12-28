@@ -27,3 +27,7 @@ agent.write_envfile("postgres.env", postgres)
 redis = { 
 } 
 agent.write_envfile("redis.env", redis) 
+ 
+soketi = { 
+} 
+agent.write_envfile("soketi.env", soketi) 
