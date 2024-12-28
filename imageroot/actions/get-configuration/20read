@@ -26,18 +26,14 @@ config["lets_encrypt"] = os.getenv("TRAEFIK_LETS_ENCRYPT") == "True"
 # json.dump(config, fp=sys.stdout)
 if os.path.exists("coolify.env"): 
 	data = agent.read_envfile("coolify.env") 
-else: 
  
 if os.path.exists("postgres.env"): 
 	data = agent.read_envfile("postgres.env") 
-else: 
  
 if os.path.exists("redis.env"): 
 	data = agent.read_envfile("redis.env") 
-else: 
  
 if os.path.exists("soketi.env"): 
 	data = agent.read_envfile("soketi.env") 
-else: 
  
 json.dump(config, fp=sys.stdout)
