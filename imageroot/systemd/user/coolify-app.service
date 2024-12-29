@@ -18,7 +18,7 @@ TimeoutStopSec=70
 ExecStartPre=/bin/mkdir -p tmp
 ExecStartPre=/bin/rm -f %t/coolify-app.pid %t/coolify-app.ctr-id
 ExecStartPre=-runagent discover-smarthost
-ExecStart=/usr/bin/podman run --conmon-pidfile %t/coolify-app.pid  --cidfile %t/coolify-app.ctr-id --cgroups=no-conmon  --pod-id-file %t/coolify.pod-id --replace -d --name  coolify-app     --env coolify.env --env coolify-db.env \
+ExecStart=/usr/bin/podman run --conmon-pidfile %t/coolify-app.pid  --cidfile %t/coolify-app.ctr-id --cgroups=no-conmon  --pod-id-file %t/coolify.pod-id --replace -d --name  coolify-app     --env-file coolify.env --env-file coolify-db.env \
     --volume coolify-ssh:/var/www/html/storage/app/ssh \
     --volume coolify-applications:/var/www/html/storage/app/applications \
     --volume coolify-databases:/var/www/html/storage/app/databases \
