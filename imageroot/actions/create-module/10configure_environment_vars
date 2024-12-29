@@ -40,10 +40,10 @@ agent.write_envfile("database.env", db_config)
 random_bytes = os.urandom(32)
 
 APP_KEY = "base64:" + base64.b64encode(random_bytes).decode("utf-8")
-APP_ENV = data.get("APP_ENV", "local")
+APP_ENV = data.get("APP_ENV", "production")
 APP_NAME = data.get("APP_NAME", "Coolify")
-APP_ID = data.get("APP_ID", "1")
-APP_DEBUG = data.get("APP_DEBUG", "true")
+APP_ID = data.get("APP_ID", "12345")
+APP_DEBUG = data.get("APP_DEBUG", "false")
 DB_DATABASE = POSTGRES_DB
 DB_USERNAME = POSTGRES_USER
 DB_PASSWORD = POSTGRES_PASSWORD
