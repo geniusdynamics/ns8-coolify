@@ -46,12 +46,19 @@ You can retrieve the configuration with
 ```
 api-cli run get-configuration --agent module/coolify1
 ```
+## Update module
+Update module 
+```shell
+api-cli run update-module --data '{"module_url":"ghcr.io/geniusdynamics/coolify:latest","instances":["coolify1"],"force":true}'
+
+```
 
 ## Uninstall
 
 To uninstall the instance:
-
+```shell
     remove-module --no-preserve coolify1
+```
 
 ## Smarthost setting discovery
 
