@@ -25,7 +25,7 @@ ExecStart=/usr/bin/podman run --conmon-pidfile %t/coolify-app.pid  --cidfile %t/
     --volume coolify-services:/var/www/html/storage/app/services:Z \
     --volume coolify-backups:/var/www/html/storage/app/backups:Z \
     --volume coolify-webhooks:/var/www/html/storage/app/webhooks-during-maintenance:Z \
-    ${COOLIFY_IMAGE}  
+    ${COOLIFY_IMAGE}
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/coolify-app.ctr-id -t 10
 ExecReload=/usr/bin/podman kill -s HUP coolify-app
 SyslogIdentifier=%u

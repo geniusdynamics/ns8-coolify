@@ -24,7 +24,7 @@ ExecStart=/usr/bin/podman run --conmon-pidfile %t/postgres-app.pid  --cidfile %t
   --volume postrges-data:/var/lib/postgresql/data:Z \
   --volume %S/state/restore/:/docker-entrypoint-initdb.d/:Z \
   --env TZ=UTC \
-  ${POSTGRES_IMAGE}  
+  ${POSTGRES_IMAGE}
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/postgres-app.ctr-id -t 10
 ExecReload=/usr/bin/podman kill -s HUP postgres-app
 SyslogIdentifier=%u

@@ -21,7 +21,7 @@ ExecStartPre=-runagent discover-smarthost
 ExecStart=/usr/bin/podman run --conmon-pidfile %t/redis-app.pid  --cidfile %t/redis-app.ctr-id --cgroups=no-conmon  --pod-id-file %t/coolify.pod-id --replace -d --name  redis-app  \
   --env-file redis.env \
   --volume redis-data:/data:Z \
-  ${REDIS_IMAGE}  
+  ${REDIS_IMAGE}
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/redis-app.ctr-id -t 10
 ExecReload=/usr/bin/podman kill -s HUP redis-app
 SyslogIdentifier=%u
