@@ -8,14 +8,7 @@
 set -e
 
 if ! systemctl --user -q is-active coolify.service; then
-    exit 0
+	exit 0
 fi
 
-podman exec mariadb-app mysqldump \
-        --databases coolify \
-        --default-character-set=utf8mb4 \
-        --skip-dump-date \
-        --ignore-table=mysql.event \
-        --single-transaction \
-        --quick \
-        --add-drop-table  > coolify.sql
+podman exec postgres-app pg_dump -U coolify --format=c coolify >coolify.pg_dump
