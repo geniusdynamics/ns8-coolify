@@ -46,7 +46,7 @@ buildah config --entrypoint=/ \
 	--label="org.nethserver.authorizations=traefik@node:routeadm" \
 	--label="org.nethserver.tcp-ports-demand=1" \
 	--label="org.nethserver.rootfull=0" \
-	--label="org.nethserver.images=ghcr.io/coollabsio/coolify:${coolify_version} docker.io/postgres:15-alpine docker.io/redis:7-alpine ghcr.io/coollabsio/coolify-realtime:${coolify_socketi}" \
+	--label="org.nethserver.images=docker.io/coollabsio/coolify:${coolify_version} docker.io/postgres:15-alpine docker.io/redis:7-alpine ghcr.io/coollabsio/coolify-realtime:${coolify_socketi}" \
 	"${container}"
 # Commit the image
 buildah commit "${container}" "${repobase}/${reponame}"
