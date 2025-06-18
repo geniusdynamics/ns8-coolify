@@ -14,8 +14,8 @@ images=()
 repobase="${REPOBASE:-ghcr.io/geniusdynamics}"
 # Configure the image name
 reponame="coolify"
-coolify_version="4.0.0-beta.395"
-coolify_socketi="1.0.5"
+coolify_version="4.0.0-beta.419"
+coolify_socketi="1.0.9"
 # Create a new empty container image
 container=$(buildah from scratch)
 
