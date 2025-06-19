@@ -1,13 +1,17 @@
 {
   "name": "coolify",
   "description": {
-    "en": "My coolify module"
+    "en": "Self-hosting with superpowers."
   },
-  "categories": [],
+  "categories": ["self-hosting"],
   "authors": [
     {
-      "name": "Name Surname",
-      "email": "author@yourmail.org"
+      "name": "Kemboi Elvis",
+      "email": "kemboielvis@genius.ke"
+    },
+    {
+      "name": "Martin Bhuong",
+      "email": "martin@genius.ke"
     }
   ],
   "docs": {
