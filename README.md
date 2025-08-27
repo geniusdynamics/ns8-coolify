@@ -1,9 +1,9 @@
 # NS8 Coolify Module
 
-[![NethServer 8](https://img.shields.io/badge/NethServer-8-blue)](https://github.com/NethServer/ns8-core)
+[![NethServer 8](https://img.shields.io/badge/NethServer-8-blue)](https://github.com/geniusdynamics/gcns8-core)
 [![License](https://img.shields.io/badge/License-GPL--3.0-green)](LICENSE)
 
-A [NethServer 8](https://github.com/NethServer/ns8-core) module that integrates **Coolify** - an open-source, self-hosted alternative to Heroku/Netlify for deploying web applications.
+A [NethServer 8](https://github.com/geniusdynamics/gcns8-core) module that integrates **Coolify** - an open-source, self-hosted alternative to Heroku/Netlify for deploying web applications.
 
 ## What is Coolify?
 
@@ -41,13 +41,17 @@ This module brings Coolify's powerful deployment capabilities to your NethServer
 Instantiate the module with:
 
 ```bash
-add-module ghcr.io/nethserver/coolify:latest 1
+add-module ghcr.io/geniusdynamics/coolify:latest 1
 ```
 
 The output will return the instance name:
 
 ```json
-{"module_id": "coolify1", "image_name": "coolify", "image_url": "ghcr.io/nethserver/coolify:latest"}
+{
+  "module_id": "coolify1",
+  "image_name": "coolify",
+  "image_url": "ghcr.io/geniusdynamics/coolify:latest"
+}
 ```
 
 ## Configuration
@@ -71,6 +75,7 @@ EOF
 ```
 
 This will:
+
 - Start and configure the Coolify instance
 - Set up a virtual host in Traefik for external access
 - Configure automatic HTTPS if enabled
@@ -93,7 +98,7 @@ api-cli run get-configuration --agent module/coolify1
 ### Update Module
 
 ```bash
-api-cli run update-module --data '{"module_url":"ghcr.io/nethserver/coolify:latest","instances":["coolify1"],"force":true}'
+api-cli run update-module --data '{"module_url":"ghcr.io/geniusdynamics/coolify:latest","instances":["coolify1"],"force":true}'
 ```
 
 ### Uninstall
@@ -117,27 +122,32 @@ The module runs with comprehensive environment variables managed by the NethServ
 ### Debug Commands
 
 Check environment variables:
+
 ```bash
 runagent -m coolify1 env
 ```
 
 Enter the module's runtime environment:
+
 ```bash
 runagent -m coolify1
 ```
 
 Inspect running containers:
+
 ```bash
 runagent -m coolify1
 podman ps
 ```
 
 Access container environment:
+
 ```bash
 podman exec coolify-app env
 ```
 
 Open shell in container:
+
 ```bash
 podman exec -ti coolify-app sh
 ```
@@ -154,7 +164,7 @@ The module includes a Vue.js-based web interface. For UI development:
 Test the module using the provided script:
 
 ```bash
-./test-module.sh <NODE_ADDR> ghcr.io/nethserver/coolify:latest
+./test-module.sh <NODE_ADDR> ghcr.io/geniusdynamics/gccoolify:latest
 ```
 
 Tests are written using [Robot Framework](https://robotframework.org/).
@@ -164,13 +174,14 @@ Tests are written using [Robot Framework](https://robotframework.org/).
 The UI supports multiple languages and is translated via [Weblate](https://hosted.weblate.org/projects/ns8/).
 
 To contribute translations:
+
 - Add the [GitHub Weblate app](https://docs.weblate.org/en/latest/admin/continuous.html#github-setup) to your repository
 - Add your repository to [hosted.weblate.org](https://hosted.weblate.org) or request addition to the NS8 Weblate project
 
 ## Support & Contributing
 
 - 📖 [NethServer Documentation](https://nethserver.github.io/ns8-core/)
-- 🐛 [Report Issues](https://github.com/NethServer/ns8-coolify/issues)
+- 🐛 [Report Issues](https://github.com/geniusdynamics/gcns8-coolify/issues)
 - 💬 [Community Forum](https://community.nethserver.org/)
 - 🤝 [Contributing Guide](CONTRIBUTING.md)
 
