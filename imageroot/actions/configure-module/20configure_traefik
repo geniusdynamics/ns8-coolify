@@ -33,8 +33,10 @@ env_tcp_ports = os.environ["TCP_PORTS"].split(",")
 
 client_tcp_port = env_tcp_ports[0]
 socket_tcp_port = env_tcp_ports[1]
+socket_tcp_port_2 = env_tcp_ports[2]
 agent.set_env("SOCKET_TCP_PORT", socket_tcp_port)
 agent.set_env("CLIENT_TCP_PORT", client_tcp_port)
+agent.set_env("WEBSOCKET_TCP_PORT", socket_tcp_port_2)
 # Find default traefik instance for current node
 default_traefik_id = agent.resolve_agent_id("traefik@node")
 if default_traefik_id is None:
@@ -57,6 +59,17 @@ response = agent.tasks.run(
     data={
         "instance": os.environ["MODULE_ID"] + "-socket",
         "url": "http://127.0.0.1:" + socket_tcp_port,
+        "host": host,
+        "http2https": h2hs,
+        "lets_encrypt": le,
+    },
+)
+response = agent.tasks.run(
+    agent_id=agent.resolve_agent_id("traefik@node"),
+    action="set-route",
+    data={
+        "instance": os.environ["MODULE_ID"] + "-web-socket",
+        "url": "http://127.0.0.1:" + socket_tcp_port_2,
         "host": host,
         "http2https": h2hs,
         "lets_encrypt": le,
