@@ -14,7 +14,7 @@ images=()
 repobase="${REPOBASE:-ghcr.io/geniusdynamics}"
 # Configure the image name
 reponame="coolify"
-coolify_version="4.0.0-beta.428"
+coolify_version="4.0.0-beta.429"
 coolify_socketi="1.0.10"
 # Create a new empty container image
 container=$(buildah from scratch)
@@ -44,7 +44,7 @@ buildah add "${container}" ui/dist /ui
 # tcp-ports-demand=1 number of tcp Port to reserve , 1 is the minimum, can be udp or tcp
 buildah config --entrypoint=/ \
 	--label="org.nethserver.authorizations=traefik@node:routeadm" \
-	--label="org.nethserver.tcp-ports-demand=1" \
+	--label="org.nethserver.tcp-ports-demand=3" \
 	--label="org.nethserver.rootfull=0" \
 	--label="org.nethserver.images=ghcr.io/coollabsio/coolify:${coolify_version} docker.io/postgres:15-alpine docker.io/redis:7-alpine ghcr.io/coollabsio/coolify-realtime:${coolify_socketi}" \
 	"${container}"
