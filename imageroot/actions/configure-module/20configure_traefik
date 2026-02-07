@@ -59,7 +59,7 @@ response = agent.tasks.run(
     data={
         "instance": os.environ["MODULE_ID"] + "-socket",
         "url": "http://127.0.0.1:" + socket_tcp_port,
-        "host": host,
+        "host": "socket." + host,
         "http2https": h2hs,
         "lets_encrypt": le,
     },
@@ -70,7 +70,7 @@ response = agent.tasks.run(
     data={
         "instance": os.environ["MODULE_ID"] + "-web-socket",
         "url": "http://127.0.0.1:" + socket_tcp_port_2,
-        "host": host,
+        "host": "websocket." + host,
         "http2https": h2hs,
         "lets_encrypt": le,
     },
