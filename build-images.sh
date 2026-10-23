@@ -14,8 +14,10 @@ images=()
 repobase="${REPOBASE:-ghcr.io/geniusdynamics}"
 # Configure the image name
 reponame="coolify"
-coolify_version="4.0.0-beta.463"
-coolify_socketi="1.0.10"
+# 4.0.1: security release of the 4.0 line (PHP 8.4.27, CVE-2026-109618/109619);
+# the 4.0.0 betas get no further fixes. Realtime as in upstream docker-compose.prod.yml v4.0.1.
+coolify_version="4.0.1"
+coolify_socketi="1.0.13"
 # Create a new empty container image
 container=$(buildah from scratch)
 
