@@ -17,8 +17,10 @@ reponame="coolify"
 # Node.js 25+ no longer ships Corepack, install it from npm
 # renovate: datasource=npm packageName=corepack
 corepack_version=0.36.0
-coolify_version="4.0.0-beta.463"
-coolify_socketi="1.0.10"
+# renovate: datasource=docker packageName=ghcr.io/coollabsio/coolify
+coolify_version=4.0.0-beta.463
+# renovate: datasource=docker packageName=ghcr.io/coollabsio/coolify-realtime
+coolify_socketi_version=1.0.10
 # Create a new empty container image
 container=$(buildah from scratch)
 
@@ -50,7 +52,7 @@ buildah config --entrypoint=/ \
 	--label="org.nethserver.authorizations=traefik@node:routeadm" \
 	--label="org.nethserver.tcp-ports-demand=3" \
 	--label="org.nethserver.rootfull=0" \
-	--label="org.nethserver.images=ghcr.io/coollabsio/coolify:${coolify_version} docker.io/postgres:15.20-alpine3.24 docker.io/redis:7.4.12-alpine3.22 ghcr.io/coollabsio/coolify-realtime:${coolify_socketi}" \
+	--label="org.nethserver.images=ghcr.io/coollabsio/coolify:${coolify_version} docker.io/postgres:15.20-alpine3.24 docker.io/redis:7.4.12-alpine3.22 ghcr.io/coollabsio/coolify-realtime:${coolify_socketi_version}" \
 	"${container}"
 # Commit the image
 buildah commit "${container}" "${repobase}/${reponame}"
