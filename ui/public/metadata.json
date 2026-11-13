@@ -1,9 +1,13 @@
 {
   "name": "coolify",
   "description": {
-    "en": "Self-hosting with superpowers."
+    "en": "Coolify is a self-hosted platform to deploy applications, databases and services on your own servers.",
+    "it": "Coolify è una piattaforma self-hosted per distribuire applicazioni, database e servizi sui propri server."
   },
-  "categories": ["self-hosting"],
+  "categories": [
+    "development",
+    "system_administration"
+  ],
   "authors": [
     {
       "name": "Kemboi Elvis",
