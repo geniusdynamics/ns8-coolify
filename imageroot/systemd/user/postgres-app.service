@@ -7,13 +7,16 @@
 Description=Podman  postgres-app.service
 BindsTo=coolify.service
 After=coolify.service
+Before=coolify-app.service
 
 [Service]
+TimeoutStartSec=300
 Environment=PODMAN_SYSTEMD_UNIT=%n
 EnvironmentFile=%S/state/environment
 EnvironmentFile=-%S/state/smarthost.env
 WorkingDirectory=%S/state
 Restart=always
+RestartSec=10
 TimeoutStopSec=70
 ExecStartPre=/bin/mkdir -p tmp
 ExecStartPre=/bin/rm -f %t/postgres-app.pid %t/postgres-app.ctr-id
@@ -25,6 +28,10 @@ ExecStart=/usr/bin/podman run --conmon-pidfile %t/postgres-app.pid  --cidfile %t
   --volume %S/state/restore/:/docker-entrypoint-initdb.d/:Z \
   --env TZ=UTC \
   ${POSTGRES_IMAGE}
+# Coolify runs its database migrations once, when it starts: report the
+# unit started only once PostgreSQL accepts TCP connections (the init
+# server of a new database listens only on its socket)
+ExecStartPost=/usr/bin/bash -c "for i in $$(seq 1 90); do podman exec postgres-app pg_isready -h 127.0.0.1 -U coolify && exit 0; sleep 2; done; exit 1"
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/postgres-app.ctr-id -t 10
 ExecReload=/usr/bin/podman kill -s HUP postgres-app
 SyslogIdentifier=%u
