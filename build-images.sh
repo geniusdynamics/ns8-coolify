@@ -18,9 +18,11 @@ reponame="coolify"
 # renovate: datasource=npm packageName=corepack
 corepack_version=0.36.0
 # renovate: datasource=docker packageName=ghcr.io/coollabsio/coolify
-coolify_version=4.0.0-beta.463
+coolify_version=4.0.1
 # renovate: datasource=docker packageName=ghcr.io/coollabsio/coolify-realtime
-coolify_socketi_version=1.0.10
+coolify_socketi_version=1.0.13
+# 4.0.1: security release of the 4.0 line (PHP 8.4.27, CVE-2026-109618/109619);
+# the 4.0.0 betas get no further fixes. Realtime as in upstream docker-compose.prod.yml v4.0.1.
 # Create a new empty container image
 container=$(buildah from scratch)
 
