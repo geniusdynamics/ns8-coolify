@@ -11,4 +11,6 @@ if ! systemctl --user -q is-active coolify.service; then
 	exit 0
 fi
 
+# The dump holds the Coolify data: only the module user reads it
+umask 077
 podman exec postgres-app pg_dump -U coolify --format=c coolify >coolify.pg_dump

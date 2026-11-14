@@ -7,14 +7,16 @@
         {
             "host": "coolify.domain.org",
             "http2https": true,
-            "lets_encrypt": true
+            "lets_encrypt": true,
+            "ssh_host_key_checking": "warn"
         }
     ],
     "type": "object",
     "required": [
         "host",
         "http2https",
-        "lets_encrypt"
+        "lets_encrypt",
+        "ssh_host_key_checking"
     ],
     "properties": {
         "host": {
@@ -31,6 +33,16 @@
             "type": "boolean",
             "title": "HTTP to HTTPS redirection",
             "description": "Redirect all the HTTP requests to HTTPS"
+        },
+        "ssh_host_key_checking": {
+            "type": "string",
+            "enum": [
+                "warn",
+                "enforce",
+                "off"
+            ],
+            "title": "SSH host key checking",
+            "description": "How Coolify checks the SSH host key of a server: warn (default) notifies the team when a pinned key changes, enforce refuses the connection, off disables the check"
         }
     }
 }

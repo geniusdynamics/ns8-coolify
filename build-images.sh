@@ -18,11 +18,16 @@ reponame="coolify"
 # renovate: datasource=npm packageName=corepack
 corepack_version=0.36.0
 # renovate: datasource=docker packageName=ghcr.io/coollabsio/coolify
-coolify_version=4.0.1
-# renovate: datasource=docker packageName=ghcr.io/coollabsio/coolify-realtime
-coolify_socketi_version=1.0.13
-# 4.0.1: security release of the 4.0 line (PHP 8.4.27, CVE-2026-109618/109619);
-# the 4.0.0 betas get no further fixes. Realtime as in upstream docker-compose.prod.yml v4.0.1.
+COOLIFY_VERSION=4.7.5
+# renovate: datasource=docker packageName=docker.io/postgres
+POSTGRES_VERSION=15.20-alpine3.24
+# renovate: datasource=docker packageName=docker.io/redis
+REDIS_VERSION=7.4.12-alpine3.22
+# Coolify 4.4+ runs the realtime server (Laravel Reverb, port 6001) and the
+# terminal server (port 6002) inside the coolify container: the separate
+# coolify-realtime (soketi) image is gone. Upstream docker-compose.yml of
+# v4.7.5 still uses postgres:15-alpine and redis:7-alpine, so the PostgreSQL
+# and Redis majors stay the same and no data migration is needed.
 # Create a new empty container image
 container=$(buildah from scratch)
 
@@ -54,8 +59,8 @@ buildah config --entrypoint=/ \
 	--label="org.nethserver.authorizations=traefik@node:routeadm" \
 	--label="org.nethserver.tcp-ports-demand=3" \
 	--label="org.nethserver.rootfull=0" \
-    --label="org.nethserver.min-core=3.0.0" \
-	--label="org.nethserver.images=ghcr.io/coollabsio/coolify:${coolify_version} docker.io/postgres:15.20-alpine3.24 docker.io/redis:7.4.12-alpine3.22 ghcr.io/coollabsio/coolify-realtime:${coolify_socketi_version}" \
+	--label="org.nethserver.min-core=3.0.0" \
+	--label="org.nethserver.images=ghcr.io/coollabsio/coolify:${COOLIFY_VERSION} docker.io/postgres:${POSTGRES_VERSION} docker.io/redis:${REDIS_VERSION}" \
 	"${container}"
 # Commit the image
 buildah commit "${container}" "${repobase}/${reponame}"
