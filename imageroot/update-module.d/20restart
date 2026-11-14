@@ -5,11 +5,15 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-# If the control reaches this step, the service can be enabled and started
+# Restart the configured instance on the new images. configure-module
+# enables coolify.service: an instance that was never configured stays down.
+# List every unit: restarting the pod alone does not restart its containers.
 
 set -e
 
 # Redirect any output to the journal (stderr)
 exec 1>&2
 
-systemctl --user try-restart coolify.service
+if systemctl --user -q is-enabled coolify.service; then
+	systemctl --user restart coolify.service postgres-app.service redis-app.service coolify-app.service
+fi

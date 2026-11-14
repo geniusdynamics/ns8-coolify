@@ -6,7 +6,7 @@
 [Unit]
 Description=Podman  coolify-app.service
 BindsTo=coolify.service
-After=coolify.service postgres-app.service redis-app.service soketi-app.service
+After=coolify.service postgres-app.service redis-app.service
 
 [Service]
 Environment=PODMAN_SYSTEMD_UNIT=%n
@@ -25,6 +25,7 @@ ExecStart=/usr/bin/podman run --conmon-pidfile %t/coolify-app.pid  --cidfile %t/
     --volume coolify-services:/var/www/html/storage/app/services:Z \
     --volume coolify-backups:/var/www/html/storage/app/backups:Z \
     --volume coolify-webhooks:/var/www/html/storage/app/webhooks-during-maintenance:Z \
+    --volume coolify-images:/var/www/html/storage/app/images:Z \
     ${COOLIFY_IMAGE}
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/coolify-app.ctr-id -t 10
 ExecReload=/usr/bin/podman kill -s HUP coolify-app

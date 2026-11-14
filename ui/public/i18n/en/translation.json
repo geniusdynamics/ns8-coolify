@@ -38,7 +38,12 @@
     "instance_configuration": "Configure coolify",
     "domain_already_used_in_traefik": "Domain already used in traefik",
     "host_pattern": "Must be a valid fully qualified domain name",
-    "host_format": "Must be a valid fully qualified domain name"
+    "host_format": "Must be a valid fully qualified domain name",
+    "ssh_host_key_checking": "SSH host key checking",
+    "ssh_host_key_checking_helper": "Coolify pins the SSH host key of each server on the first connection. This sets what happens when the key changes later.",
+    "ssh_host_key_checking_warn": "Warn: connect and notify the team",
+    "ssh_host_key_checking_enforce": "Enforce: refuse the connection",
+    "ssh_host_key_checking_off": "Off: do not check host keys"
   },
   "about": {
     "title": "About"
