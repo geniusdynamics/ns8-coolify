@@ -1,0 +1,64 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+#
+# Migrate an instance of module 1.8.0 or older (Coolify 4.0.x) to Coolify
+# 4.7. Idempotent: it runs on every update, before 20restart.
+#
+# - Coolify 4.4+ runs the realtime server (Reverb) and the terminal server
+#   inside the coolify container, on the ports 6001 and 6002 of the pod.
+#   The old soketi-app container holds the same ports: stop and remove it
+#   before 20restart starts the new coolify-app.
+# - Generate the new secrets once (Redis password, realtime app keys) and
+#   convert the env files (see bin/write-env-files).
+# - PostgreSQL 15 and Redis 7 stay: Coolify 4.7.5 uses the same majors, so
+#   the data needs no dump and restore.
+#
+
+import os
+import subprocess
+import sys
+
+import agent
+
+
+def run(*args):
+    """Run a command, log and ignore its failure"""
+    proc = subprocess.run(args, stdout=sys.stderr, stderr=sys.stderr)
+    return proc.returncode == 0
+
+
+#
+# 1. Legacy realtime container (soketi-app). Its unit file is gone from the
+# new image, but systemd keeps the unit while it runs, with Restart=always:
+# stop it explicitly, or it could join the new pod and take port 6001.
+#
+if run("systemctl", "--user", "-q", "is-active", "soketi-app.service"):
+    print("Stopping the legacy realtime service soketi-app.service", file=sys.stderr)
+    run("systemctl", "--user", "stop", "soketi-app.service")
+run("podman", "rm", "--ignore", "--force", "soketi-app")
+run("systemctl", "--user", "reset-failed", "soketi-app.service")
+wants_link = os.path.expanduser("~/.config/systemd/user/default.target.wants/soketi-app.service")
+if os.path.islink(wants_link):
+    os.unlink(wants_link)
+
+# The realtime image is no longer in org.nethserver.images: remove it
+for var_name in ("COOLIFY_REALTIME_IMAGE", "PREV_COOLIFY_REALTIME_IMAGE"):
+    image_url = os.environ.get(var_name, "")
+    if image_url and image_url != "None":
+        print(f"Removing the legacy realtime image {image_url}", file=sys.stderr)
+        run("podman", "image", "rm", "--ignore", image_url)
+    if var_name in os.environ:
+        agent.unset_env(var_name)
+
+#
+# 2. Secrets and settings of the containers
+#
+proc = subprocess.run([os.path.join(os.environ["AGENT_INSTALL_DIR"], "bin", "write-env-files")])
+if proc.returncode != 0:
+    print(agent.SD_ERR + "Cannot write the env files of Coolify", file=sys.stderr)
+    sys.exit(1)

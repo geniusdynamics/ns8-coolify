@@ -13,5 +13,6 @@ exec 1>&2
 
 touch smarthost.env
 
+# List every unit: restarting the pod alone does not restart its containers
 systemctl --user enable coolify.service
-systemctl --user restart coolify.service
+systemctl --user restart coolify.service postgres-app.service redis-app.service coolify-app.service

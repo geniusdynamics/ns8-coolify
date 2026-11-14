@@ -66,6 +66,25 @@
               <cv-accordion-item :open="toggleAccordion[0]">
                 <template slot="title">{{ $t("settings.advanced") }}</template>
                 <template slot="content">
+                  <cv-dropdown
+                    v-model="sshHostKeyChecking"
+                    :label="$t('settings.ssh_host_key_checking')"
+                    :helper-text="$t('settings.ssh_host_key_checking_helper')"
+                    :invalid-message="error.ssh_host_key_checking"
+                    :disabled="loading.getConfiguration || loading.configureModule"
+                    class="mg-bottom"
+                    ref="ssh_host_key_checking"
+                  >
+                    <cv-dropdown-item value="warn">{{
+                      $t("settings.ssh_host_key_checking_warn")
+                    }}</cv-dropdown-item>
+                    <cv-dropdown-item value="enforce">{{
+                      $t("settings.ssh_host_key_checking_enforce")
+                    }}</cv-dropdown-item>
+                    <cv-dropdown-item value="off">{{
+                      $t("settings.ssh_host_key_checking_off")
+                    }}</cv-dropdown-item>
+                  </cv-dropdown>
                 </template>
               </cv-accordion-item>
             </cv-accordion>
@@ -125,6 +144,7 @@ export default {
       host: "",
       isLetsEncryptEnabled: false,
       isHttpToHttpsEnabled: true,
+      sshHostKeyChecking: "warn",
       loading: {
         getConfiguration: false,
         configureModule: false,
@@ -135,6 +155,7 @@ export default {
         host: "",
         lets_encrypt: "",
         http2https: "",
+        ssh_host_key_checking: "",
       },
     };
   },
@@ -202,6 +223,7 @@ export default {
       this.host = config.host;
       this.isLetsEncryptEnabled = config.lets_encrypt;
       this.isHttpToHttpsEnabled = config.http2https;
+      this.sshHostKeyChecking = config.ssh_host_key_checking || "warn";
 
       this.loading.getConfiguration = false;
       this.focusElement("host");
@@ -271,6 +293,7 @@ export default {
             host: this.host,
             lets_encrypt: this.isLetsEncryptEnabled,
             http2https: this.isHttpToHttpsEnabled,
+            ssh_host_key_checking: this.sshHostKeyChecking,
           },
           extra: {
             title: this.$t("settings.instance_configuration", {

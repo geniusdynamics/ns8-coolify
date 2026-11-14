@@ -6,34 +6,21 @@
 #
 
 #
-# Read configuration
+# Read configuration. Never return secrets: readers can run this action.
 #
 
 import os
 import sys
 import json
-import agent
 
-# Prepare return variable
 config = {}
 
 # Read current configuration from the environment file
-config["host"] = os.getenv("TRAEFIK_HOST","")
-config["http2https"] = os.getenv("TRAEFIK_HTTP2HTTPS") == "True"
-config["lets_encrypt"] = os.getenv("TRAEFIK_LETS_ENCRYPT") == "True"
+config["host"] = os.getenv("TRAEFIK_HOST", "")
+config["http2https"] = os.getenv("TRAEFIK_HTTP2HTTPS", "True").lower() == "true"
+config["lets_encrypt"] = os.getenv("TRAEFIK_LETS_ENCRYPT", "False").lower() == "true"
+config["ssh_host_key_checking"] = os.getenv("SSH_HOST_KEY_CHECKING", "warn")
+if config["ssh_host_key_checking"] not in ("warn", "enforce", "off"):
+    config["ssh_host_key_checking"] = "warn"
 
-# # Dump the configuration to stdout
-# # json.dump(config, fp=sys.stdout)
-# if os.path.exists("coolify.env"): 
-# 	data = agent.read_envfile("coolify.env") 
-#  
-# if os.path.exists("postgres.env"): 
-# 	data = agent.read_envfile("postgres.env") 
-#  
-# if os.path.exists("redis.env"): 
-# 	data = agent.read_envfile("redis.env") 
-#  
-# if os.path.exists("soketi.env"): 
-# 	data = agent.read_envfile("soketi.env") 
- 
 json.dump(config, fp=sys.stdout)

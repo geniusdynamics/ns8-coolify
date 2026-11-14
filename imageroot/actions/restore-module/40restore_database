@@ -8,35 +8,41 @@
 set -e -o pipefail
 exec 1>&2 # Redirect any output to the journal (stderr)
 
-# Prepare an initialization script that restores the dump file
-mkdir -vp initdb.d
-mv -v coolify.sql initdb.d
-#do the bash file to restore and exit once done
-cat - >initdb.d/zz_coolify_restore.sh <<'EOS'
-# Print additional information:
-mysql --version
+# Backups made by module releases up to 1.8.0 have no database dump: their
+# state-include.conf did not list it. Coolify then starts with a new, empty
+# database, which it creates with its migrations.
+if [[ ! -f coolify.pg_dump ]]; then
+	echo "<4>The backup has no coolify.pg_dump (made by module 1.8.0 or older): Coolify starts with an empty database"
+	exit 0
+fi
+
+# The PostgreSQL entrypoint sources this script after it has initialized the
+# new database: it loads the dump, read from stdin, then stops the server
+mkdir -vp restore
+cat - >restore/coolify_restore.sh <<'EOS'
+pg_restore --version
+pg_restore --no-owner --no-privileges -U "${POSTGRES_USER}" -d "${POSTGRES_DB}"
 # The script is sourced, override entrypoint args and exit:
 set -- true
 docker_temp_server_stop
 exit 0
 EOS
 
-# once we exit we remove initdb.d
-trap 'rm -rfv initdb.d/' EXIT
+# Remove the init script once done: postgres-app mounts the same directory
+trap 'rm -rfv restore/' EXIT
 
-# we start a container to initiate a database and load the dump
-# at the end of coolify_restore.sh the dump is loaded and
-# we exit the container
+# The volume name, with its typo, is the one of postgres-app.service: keep
+# it, existing installations have their data there
 podman run \
 	--rm \
 	--interactive \
 	--network=none \
 	--volume=./restore:/docker-entrypoint-initdb.d/:Z \
-	--volume=postgres-data:/var/lib/postgresql/data:Z \
+	--volume=postrges-data:/var/lib/postgresql/data:Z \
 	--replace --name=restore_db \
 	--env-file database.env \
 	--env TZ=UTC \
 	"${POSTGRES_IMAGE}" <coolify.pg_dump
 
 # If the restore is successful, clean up:
-rm -rfv restore/ coolify.pg_dump
+rm -vf coolify.pg_dump

@@ -5,83 +5,22 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-import json
-import sys
-import agent
-import os
+#
+# Store the Coolify settings that are not secrets. The env files of the
+# containers are written by 30write_env_files.
+#
 
-# Try to parse the stdin as JSON.
-# If parsing fails, output everything to stderr
+import json
+import os
+import sys
+
+import agent
+
 data = json.load(sys.stdin)
 
-# This is specific to you module, so you need to change it accordingly.
-# agent.dump_env()
-
-
-# Assuming `data` is a dictionary or object containing the values
-
-APP_URL = data.get("host", "")
-QUEUE_CONNECTION = data.get("QUEUE_CONNECTION", "redis")
-HORIZON_BALANCE = data.get("HORIZON_BALANCE", "0")
-HORIZON_MIN_PROCESSES = data.get("HORIZON_MIN_PROCESSES", "1")
-HORIZON_MAX_PROCESSES = data.get("HORIZON_MAX_PROCESSES", "10")
-HORIZON_BALANCE_MAX_SHIFT = data.get("HORIZON_BALANCE_MAX_SHIFT", "1")
-HORIZON_BALANCE_COOLDOWN = data.get("HORIZON_BALANCE_COOLDOWN", "10")
-SSL_MODE = data.get("SSL_MODE", "off")
-PHP_MEMORY_LIMIT = data.get("PHP_MEMORY_LIMIT", "1024M")
-PHP_PM_CONTROL = data.get("PHP_PM_CONTROL", "dynamic")
-PHP_PM_START_SERVERS = data.get("PHP_PM_START_SERVERS", "1")
-PHP_PM_MIN_SPARE_SERVERS = data.get("PHP_PM_MIN_SPARE_SERVERS", "1")
-PHP_PM_MAX_SPARE_SERVERS = data.get("PHP_PM_MAX_SPARE_SERVERS", "10")
-PUSHER_HOST = data.get("PUSHER_HOST", "")
-PUSHER_BACKEND_HOST = data.get("PUSHER_BACKEND_HOST", "")
-PUSHER_PORT = data.get("PUSHER_PORT", "")
-PUSHER_BACKEND_PORT = data.get("PUSHER_BACKEND_PORT", "")
-PUSHER_SCHEME = data.get("PUSHER_SCHEME", "")
-PUSHER_APP_ID = data.get("PUSHER_APP_ID", "")
-PUSHER_APP_KEY = data.get("PUSHER_APP_KEY", "")
-PUSHER_APP_SECRET = data.get("PUSHER_APP_SECRET", "")
-TERMINAL_PROTOCOL = data.get("TERMINAL_PROTOCOL", "")
-TERMINAL_HOST = data.get("TERMINAL_HOST", "")
-TERMINAL_PORT = data.get("TERMINAL_PORT", "")
-AUTOUPDATE = data.get("AUTOUPDATE", "true")
-SSH_MUX_ENABLED = data.get("SSH_MUX_ENABLED", "true")
-SSH_MUX_PERSIST_TIME = data.get("SSH_MUX_PERSIST_TIME", "60")
-
-app_config = {
-    "APP_URL": APP_URL,
-    "QUEUE_CONNECTION": QUEUE_CONNECTION,
-    "HORIZON_BALANCE": HORIZON_BALANCE,
-    "HORIZON_MIN_PROCESSES": HORIZON_MIN_PROCESSES,
-    "HORIZON_MAX_PROCESSES": HORIZON_MAX_PROCESSES,
-    "HORIZON_BALANCE_MAX_SHIFT": HORIZON_BALANCE_MAX_SHIFT,
-    "HORIZON_BALANCE_COOLDOWN": HORIZON_BALANCE_COOLDOWN,
-    "SSL_MODE": SSL_MODE,
-    "PHP_MEMORY_LIMIT": PHP_MEMORY_LIMIT,
-    "PHP_PM_CONTROL": PHP_PM_CONTROL,
-    "PHP_PM_START_SERVERS": PHP_PM_START_SERVERS,
-    "PHP_PM_MIN_SPARE_SERVERS": PHP_PM_MIN_SPARE_SERVERS,
-    "PHP_PM_MAX_SPARE_SERVERS": PHP_PM_MAX_SPARE_SERVERS,
-    "PUSHER_HOST": PUSHER_HOST,
-    "PUSHER_BACKEND_HOST": PUSHER_BACKEND_HOST,
-    "PUSHER_PORT": PUSHER_PORT,
-    "PUSHER_BACKEND_PORT": PUSHER_BACKEND_PORT,
-    "PUSHER_SCHEME": PUSHER_SCHEME,
-    "PUSHER_APP_ID": PUSHER_APP_ID,
-    "PUSHER_APP_KEY": PUSHER_APP_KEY,
-    "PUSHER_APP_SECRET": PUSHER_APP_SECRET,
-    "TERMINAL_PROTOCOL": TERMINAL_PROTOCOL,
-    "TERMINAL_HOST": TERMINAL_HOST,
-    "TERMINAL_PORT": TERMINAL_PORT,
-    "AUTOUPDATE": AUTOUPDATE,
-    "SSH_MUX_ENABLED": SSH_MUX_ENABLED,
-    "SSH_MUX_PERSIST_TIME": SSH_MUX_PERSIST_TIME,
-}
-agent.write_envfile("coolify.env", app_config)
-
-
-redis = {}
-agent.write_envfile("redis.env", redis)
-
-soketi = {}
-agent.write_envfile("soketi.env", soketi)
+# SSH host key checking of Coolify 4.7+: warn (default), enforce or off.
+# A request without the field keeps the current value.
+agent.set_env(
+    "SSH_HOST_KEY_CHECKING",
+    data.get("ssh_host_key_checking", os.environ.get("SSH_HOST_KEY_CHECKING", "warn")),
+)

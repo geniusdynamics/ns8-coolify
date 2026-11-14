@@ -1,0 +1,169 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+#
+# Write the env files of the Coolify containers in state/. The script is
+# idempotent and runs from create-module, configure-module, restore-module
+# and update-module.d:
+#
+# - it keeps every secret that exists (APP_KEY, database password...) and
+#   generates the missing ones once (Redis password, realtime app keys);
+# - it converts the settings of older module releases (container host
+#   names, PHP-FPM variable names, empty realtime keys);
+# - it never prints a secret.
+#
+# Secrets live in files with mode 0600, never in the module environment.
+#
+
+import base64
+import os
+import secrets
+import sys
+
+import agent
+
+os.chdir(os.environ["AGENT_STATE_DIR"])
+
+
+def read_env(path):
+    try:
+        return agent.read_envfile(path)
+    except FileNotFoundError:
+        return {}
+
+
+def write_env(path, envmap):
+    """Write an env file atomically, readable only by the module user"""
+    tmp_path = f".{path}.tmp-{os.getpid()}"
+    fd = os.open(tmp_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w") as fo:
+        for key in sorted(envmap):
+            fo.write(f"{key}={envmap[key]}\n")
+    os.chmod(tmp_path, 0o600)
+    os.replace(tmp_path, path)
+
+
+def generate_password(length=32):
+    # Hex only: the value goes unquoted in env files and Redis configuration
+    return secrets.token_hex(length // 2)
+
+
+# The module environment of this process, plus the values that an earlier
+# step of the same action stored with agent.set_env()
+env = dict(os.environ)
+env.update(read_env("environment"))
+
+#
+# PostgreSQL server credentials. They are set when the database is
+# initialized, so an existing file is never changed.
+#
+database = read_env("database.env")
+if not database.get("POSTGRES_PASSWORD"):
+    database = {
+        "POSTGRES_PASSWORD": generate_password(16),
+        "POSTGRES_DB": "coolify",
+        "POSTGRES_USER": "coolify",
+    }
+    print("Generated the PostgreSQL credentials", file=sys.stderr)
+write_env("database.env", database)
+
+#
+# Coolify secrets and connection settings
+#
+coolify_db = read_env("coolify-db.env")
+changed = []
+
+
+def keep_or_generate(key, generator):
+    if not coolify_db.get(key):
+        coolify_db[key] = generator()
+        changed.append(key)
+
+
+# APP_KEY encrypts data in the database: never replace an existing one
+keep_or_generate("APP_KEY", lambda: "base64:" + base64.b64encode(os.urandom(32)).decode("utf-8"))
+keep_or_generate("APP_ID", lambda: secrets.token_hex(16))
+keep_or_generate("REDIS_PASSWORD", generate_password)
+# Coolify 4.4+ embeds Laravel Reverb: the server and the browser must use
+# the same app key. Module releases up to 1.8.0 left these keys empty.
+keep_or_generate("PUSHER_APP_ID", lambda: secrets.token_hex(16))
+keep_or_generate("PUSHER_APP_KEY", lambda: secrets.token_hex(32))
+keep_or_generate("PUSHER_APP_SECRET", lambda: secrets.token_hex(32))
+
+coolify_db.setdefault("APP_ENV", "production")
+coolify_db.setdefault("APP_NAME", "Coolify")
+coolify_db.setdefault("APP_DEBUG", "false")
+coolify_db["DB_CONNECTION"] = "pgsql"
+coolify_db["DB_DATABASE"] = coolify_db.get("DB_DATABASE") or database["POSTGRES_DB"]
+coolify_db["DB_USERNAME"] = coolify_db.get("DB_USERNAME") or database["POSTGRES_USER"]
+coolify_db["DB_PASSWORD"] = coolify_db.get("DB_PASSWORD") or database["POSTGRES_PASSWORD"]
+# The containers share the pod network namespace: they reach each other on
+# 127.0.0.1. Module releases up to 1.8.0 used the container names.
+coolify_db["DB_HOST"] = "127.0.0.1"
+coolify_db["DB_PORT"] = "5432"
+coolify_db["REDIS_HOST"] = "127.0.0.1"
+coolify_db["REDIS_PORT"] = "6379"
+write_env("coolify-db.env", coolify_db)
+
+if changed:
+    print("Generated the missing secrets: " + ", ".join(sorted(changed)), file=sys.stderr)
+
+#
+# Redis server: the same password as the Coolify side
+#
+write_env("redis.env", {"REDIS_PASSWORD": coolify_db["REDIS_PASSWORD"]})
+
+#
+# Coolify settings without secrets. Keep the tunables of an existing file,
+# also under their names from older module releases.
+#
+previous = read_env("coolify.env")
+
+
+def keep(key, default, legacy_key=None):
+    value = previous.get(key) or (previous.get(legacy_key) if legacy_key else "")
+    return value or default
+
+
+host = env.get("TRAEFIK_HOST", "")
+ssh_host_key_checking = env.get("SSH_HOST_KEY_CHECKING", "warn")
+if ssh_host_key_checking not in ("warn", "enforce", "off"):
+    ssh_host_key_checking = "warn"
+
+coolify = {
+    "APP_URL": f"https://{host}" if host else "",
+    "QUEUE_CONNECTION": keep("QUEUE_CONNECTION", "redis"),
+    "HORIZON_BALANCE": keep("HORIZON_BALANCE", "0"),
+    "HORIZON_MIN_PROCESSES": keep("HORIZON_MIN_PROCESSES", "1"),
+    "HORIZON_MAX_PROCESSES": keep("HORIZON_MAX_PROCESSES", "10"),
+    "HORIZON_BALANCE_MAX_SHIFT": keep("HORIZON_BALANCE_MAX_SHIFT", "1"),
+    "HORIZON_BALANCE_COOLDOWN": keep("HORIZON_BALANCE_COOLDOWN", "10"),
+    "PHP_MEMORY_LIMIT": keep("PHP_MEMORY_LIMIT", "1024M"),
+    # The PHP base image reads PHP_FPM_PM_*: releases up to 1.8.0 wrote
+    # PHP_PM_*, which had no effect
+    "PHP_FPM_PM_CONTROL": keep("PHP_FPM_PM_CONTROL", "dynamic", "PHP_PM_CONTROL"),
+    "PHP_FPM_PM_START_SERVERS": keep("PHP_FPM_PM_START_SERVERS", "1", "PHP_PM_START_SERVERS"),
+    "PHP_FPM_PM_MIN_SPARE_SERVERS": keep("PHP_FPM_PM_MIN_SPARE_SERVERS", "1", "PHP_PM_MIN_SPARE_SERVERS"),
+    "PHP_FPM_PM_MAX_SPARE_SERVERS": keep("PHP_FPM_PM_MAX_SPARE_SERVERS", "10", "PHP_PM_MAX_SPARE_SERVERS"),
+    # Reverb runs in the coolify container. The browser reaches it, and the
+    # terminal server, through the dashboard host name: nginx in the
+    # container proxies /app/ to port 6001 and /terminal/ws to port 6002.
+    # PUSHER_HOST, PUSHER_PORT and TERMINAL_* stay unset for this reason.
+    "PUSHER_BACKEND_HOST": "127.0.0.1",
+    "PUSHER_BACKEND_PORT": "6001",
+    # NethServer updates the module: Coolify must not try to upgrade itself
+    "AUTOUPDATE": "false",
+    "SSH_MUX_ENABLED": keep("SSH_MUX_ENABLED", "true"),
+    "SSH_MUX_PERSIST_TIME": keep("SSH_MUX_PERSIST_TIME", "60"),
+    "SSH_HOST_KEY_CHECKING": ssh_host_key_checking,
+}
+write_env("coolify.env", coolify)
+
+# The realtime container of Coolify < 4.4 is gone
+if os.path.exists("soketi.env"):
+    os.remove("soketi.env")
+    print("Removed soketi.env: Coolify runs the realtime server in its own container", file=sys.stderr)

@@ -1,0 +1,12 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2026 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+# Write the env files of the containers from the module environment and the
+# secrets in state/ (see bin/write-env-files)
+set -e
+exec 1>&2
+exec "${AGENT_INSTALL_DIR}/bin/write-env-files"
