@@ -14,17 +14,23 @@ images=()
 repobase="${REPOBASE:-ghcr.io/geniusdynamics}"
 # Configure the image name
 reponame="coolify"
+# Node.js 25+ no longer ships Corepack, install it from npm
+# renovate: datasource=npm packageName=corepack
+corepack_version=0.36.0
+# renovate: datasource=docker packageName=ghcr.io/coollabsio/coolify
+coolify_version=4.0.1
+# renovate: datasource=docker packageName=ghcr.io/coollabsio/coolify-realtime
+coolify_socketi_version=1.0.13
 # 4.0.1: security release of the 4.0 line (PHP 8.4.27, CVE-2026-109618/109619);
 # the 4.0.0 betas get no further fixes. Realtime as in upstream docker-compose.prod.yml v4.0.1.
-coolify_version="4.0.1"
-coolify_socketi="1.0.13"
 # Create a new empty container image
 container=$(buildah from scratch)
 
 # Reuse existing nodebuilder-coolify container, to speed up builds
 if ! buildah containers --format "{{.ContainerName}}" | grep -q nodebuilder-coolify; then
 	echo "Pulling NodeJS runtime..."
-	buildah from --name nodebuilder-coolify -v "${PWD}:/usr/src:Z" docker.io/library/node:lts
+	buildah from --name nodebuilder-coolify -v "${PWD}:/usr/src:Z" docker.io/library/node:26.13.0-slim
+	buildah run nodebuilder-coolify sh -c "npm install -g corepack@${corepack_version} && corepack enable"
 fi
 
 echo "Build static UI files with node..."
@@ -48,7 +54,8 @@ buildah config --entrypoint=/ \
 	--label="org.nethserver.authorizations=traefik@node:routeadm" \
 	--label="org.nethserver.tcp-ports-demand=3" \
 	--label="org.nethserver.rootfull=0" \
-	--label="org.nethserver.images=ghcr.io/coollabsio/coolify:${coolify_version} docker.io/postgres:15-alpine docker.io/redis:7-alpine ghcr.io/coollabsio/coolify-realtime:${coolify_socketi}" \
+    --label="org.nethserver.min-core=3.0.0" \
+	--label="org.nethserver.images=ghcr.io/coollabsio/coolify:${coolify_version} docker.io/postgres:15.20-alpine3.24 docker.io/redis:7.4.12-alpine3.22 ghcr.io/coollabsio/coolify-realtime:${coolify_socketi_version}" \
 	"${container}"
 # Commit the image
 buildah commit "${container}" "${repobase}/${reponame}"
