@@ -18,7 +18,7 @@ reponame="coolify"
 # renovate: datasource=npm packageName=corepack
 corepack_version=0.36.0
 # renovate: datasource=docker packageName=ghcr.io/coollabsio/coolify
-COOLIFY_VERSION=4.7.5
+COOLIFY_VERSION=4.7.8
 # renovate: datasource=docker packageName=docker.io/postgres
 POSTGRES_VERSION=15.20-alpine3.24
 # renovate: datasource=docker packageName=docker.io/redis
